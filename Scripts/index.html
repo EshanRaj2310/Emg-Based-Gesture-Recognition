@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMG Gesture Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a1a;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            transition: background-color 0.5s ease;
+        }
+
+        .container {
+            text-align: center;
+            background: #2d2d2d;
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 400px;
+        }
+
+        h2 { color: #888; font-weight: 400; margin-bottom: 10px; }
+
+        #gesture-display {
+            font-size: 4rem;
+            font-weight: bold;
+            margin: 20px 0;
+            text-transform: uppercase;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background-color: #444;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        #confidence-fill {
+            height: 100%;
+            width: 0%;
+            background-color: #00ff88;
+            transition: width 0.1s ease;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+
+        /* Status Dot */
+        .status {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+        .dot {
+            height: 10px;
+            width: 10px;
+            background-color: red;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="status">
+        <div class="dot" id="status-dot"></div>
+        <span id="status-text">Disconnected</span>
+    </div>
+
+    <div class="container">
+        <h2>Detected Gesture</h2>
+        <div id="gesture-display">...</div>
+        
+        <div class="progress-bar">
+            <div id="confidence-fill"></div>
+        </div>
+        
+        <div class="stats">
+            <span>Confidence</span>
+            <span id="conf-value">0%</span>
+        </div>
+    </div>
+
+    <script>
+        const ws = new WebSocket("ws://127.0.0.1:8000/ws");
+        const display = document.getElementById("gesture-display");
+        const confFill = document.getElementById("confidence-fill");
+        const confValue = document.getElementById("conf-value");
+        const statusDot = document.getElementById("status-dot");
+        const statusText = document.getElementById("status-text");
+        const body = document.body;
+
+        ws.onopen = () => {
+            statusDot.style.backgroundColor = "#00ff88";
+            statusText.textContent = "System Online";
+        };
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            
+            // Update Text
+            display.innerText = data.gesture;
+            confValue.innerText = data.confidence + "%";
+            confFill.style.width = data.confidence + "%";
+
+            // Dynamic Styling based on Gesture
+            let color = "#1a1a1a"; // Default Dark
+            let textColor = "#fff";
+
+            if (data.gesture === "STRONG_FIST") {
+                color = "#3d0000"; // Dark Red
+                textColor = "#ff4444";
+            } else if (data.gesture === "OPEN") {
+                color = "#002b1f"; // Dark Green
+                textColor = "#00ff88";
+            } else if (data.gesture === "WRIST_UP") {
+                color = "#001a33"; // Dark Blue
+                textColor = "#4da6ff";
+            } else if (data.gesture === "WRIST_DOWN") {
+                color = "#332600"; // Dark Gold
+                textColor = "#ffcc00";
+            }
+
+            // Apply colors
+            body.style.backgroundColor = color;
+            display.style.color = textColor;
+            confFill.style.backgroundColor = textColor;
+        };
+
+        ws.onclose = () => {
+            statusDot.style.backgroundColor = "red";
+            statusText.textContent = "Offline";
+        };
+    </script>
+</body>
+</html>

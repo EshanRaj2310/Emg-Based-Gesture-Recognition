@@ -1,0 +1,9 @@
+# Local broken LFS pointer assets (kept locally, not tracked)
+instructions-main/graphs_final/**/*.png
+instructions-main/Omnitrix-main/graphs/**/*.png
+instructions-main/models/**/*.pth
+instructions-main/models/*.png
+instructions-main/Ben-main/graphs_final/**/*.png
+instructions-main/Ben-main/Omnitrix-main/graphs/**/*.png
+instructions-main/Ben-main/models/**/*.pth
+instructions-main/Ben-main/models/*.png
